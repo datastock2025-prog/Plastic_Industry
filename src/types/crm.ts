@@ -152,26 +152,31 @@ export interface Account {
   nextExpectedOrderDate: string;
   customerRating: number; // 1-5 stars
   healthScore: number; // 0-100
-  segmentTier: 'Tier 1 - Strategic' | 'Tier 2 - Enterprise' | 'Tier 3 - Growth' | 'Tier 4 - Standard';
+  segmentTier: 'Tier 1 - Strategic' | 'Tier 2 - Enterprise' | 'Tier 3 - Growth' | 'Tier 4 - Standard' | 'Tier 2 - Growth' | 'Tier 3 - Transactional';
 }
 
 export interface Contact {
   id: string;
-  contactName: string;
+  contactName?: string;
+  fullName?: string;
   accountId: string;
   accountName: string;
   designation: string;
   department: 'Purchasing' | 'Engineering' | 'Quality' | 'Finance' | 'Production' | 'Logistics' | 'Executive Management';
-  contactType: 'Decision Maker' | 'Influencer' | 'Technical Contact' | 'Buyer' | 'Quality Contact' | 'Finance Contact';
+  contactType?: 'Decision Maker' | 'Influencer' | 'Technical Contact' | 'Buyer' | 'Quality Contact' | 'Finance Contact';
   phone: string;
   mobile: string;
   email: string;
-  preferredCommunicationChannel: 'Email' | 'Phone' | 'WhatsApp' | 'In-Person Meeting';
+  preferredCommunicationChannel?: 'Email' | 'Phone' | 'WhatsApp' | 'In-Person Meeting';
+  preferredContactChannel?: string;
   address?: string;
-  isActive: boolean;
+  isActive?: boolean;
+  isPrimary?: boolean;
+  decisionMakerRole?: string;
+  reportsTo?: string;
   avatarUrl?: string;
   notes?: string;
-  lastContactedDate: string;
+  lastContactedDate?: string;
 }
 
 export type ActivityType =
@@ -184,24 +189,36 @@ export type ActivityType =
   | 'Technical Discussion'
   | 'Sample Follow-Up'
   | 'Complaint Follow-Up'
-  | 'Quotation Follow-Up';
+  | 'Quotation Follow-Up'
+  | 'Phone Call'
+  | 'Video Conference'
+  | 'Customer Plant Visit'
+  | 'Sample Trial Visit'
+  | 'Commercial Negotiation';
+
+export type ActivityStatus = 'Pending' | 'In Progress' | 'Completed' | 'Overdue' | 'Canceled' | 'Planned';
 
 export interface Activity {
   id: string;
   subject: string;
-  activityType: ActivityType;
-  relatedToType: 'Lead' | 'Opportunity' | 'Account' | 'Contact' | 'Complaint' | 'Sample';
-  relatedToId: string;
-  relatedToName: string;
+  activityType?: ActivityType;
+  type?: string;
+  accountId?: string;
+  accountName?: string;
+  contactPerson?: string;
+  relatedToType?: 'Lead' | 'Opportunity' | 'Account' | 'Contact' | 'Complaint' | 'Sample';
+  relatedToId?: string;
+  relatedToName?: string;
   assignedTo: string;
-  dueDate: string;
+  dueDate?: string;
   dueTime?: string;
+  scheduledDate?: string;
   priority: 'Low' | 'Medium' | 'High';
-  status: 'Pending' | 'In Progress' | 'Completed' | 'Overdue' | 'Canceled';
+  status: ActivityStatus;
   description: string;
   outcomeNotes?: string;
-  createdBy: string;
-  createdAt: string;
+  createdBy?: string;
+  createdAt?: string;
   completedAt?: string;
 }
 
@@ -214,7 +231,7 @@ export interface CustomerInquiry {
   email: string;
   phone: string;
   inquiryDate: string;
-  source: 'Email' | 'Phone' | 'Website' | 'Exhibition' | 'Referral' | 'Sales Visit';
+  source: 'Email' | 'Phone' | 'Website' | 'Exhibition' | 'Referral' | 'Sales Visit' | 'PlastIndia Exhibition';
   productInterest: ProductInterestType;
   itemCodeOrProposed: string;
   customerPartNumber?: string;
@@ -251,58 +268,92 @@ export interface QuotationLineItem {
   competitorPrice?: number;
 }
 
+export type QuotationStatus =
+  | 'Draft'
+  | 'Pending Approval'
+  | 'Approved'
+  | 'Sent'
+  | 'Customer Reviewing'
+  | 'Accepted'
+  | 'Lost'
+  | 'Expired'
+  | 'Converted to Sales Order'
+  | 'Submitted'
+  | 'Rejected';
+
 export interface Quotation {
   id: string;
   quotationNumber: string;
-  customerName: string;
+  revisionNumber?: number | string;
+  customerName?: string;
+  accountName?: string;
   accountId: string;
-  contactPerson: string;
+  contactPerson?: string;
   opportunityId?: string;
   opportunityName?: string;
-  quoteDate: string;
+  quoteDate?: string;
+  quotationDate?: string;
   validUntil: string;
   paymentTerms: string;
-  incoterms: string;
-  currency: string;
-  subtotal: number;
-  discountTotal: number;
-  taxTotal: number;
+  incoterms?: string;
+  currency?: string;
+  subtotal?: number;
+  discountTotal?: number;
+  taxTotal?: number;
+  taxAmount?: number;
+  deliveryTerms?: string;
+  polymerPriceEscalationClause?: boolean;
   totalAmount: number;
-  marginPct: number;
+  marginPct?: number;
+  marginPercentage?: number;
   salesperson: string;
-  status: 'Draft' | 'Pending Approval' | 'Approved' | 'Sent' | 'Customer Reviewing' | 'Accepted' | 'Lost' | 'Expired' | 'Converted to Sales Order';
-  approvalRequired: boolean;
+  status: QuotationStatus;
+  approvalRequired?: boolean;
   approvalStatus?: 'Pending Director Approval' | 'Approved' | 'Rejected';
-  lineItems: QuotationLineItem[];
+  lineItems?: QuotationLineItem[];
+  items?: any[];
   customerSpecificLabels?: string;
   specialNotes?: string;
   convertedSalesOrderId?: string;
 }
 
+export type SampleApprovalStatus = 'Pending' | 'Sample Dispatched' | 'Trial Passed' | 'Sample Approved' | 'Rejected' | 'Approved' | 'Sent to Customer';
+
 export interface SampleRequest {
   id: string;
-  sampleCode: string;
-  customerName: string;
+  sampleCode?: string;
+  sampleNumber?: string;
+  customerName?: string;
+  accountName?: string;
   accountId: string;
-  contactPerson: string;
+  contactPerson?: string;
   opportunityId?: string;
   itemDescription: string;
   customerPartNumber?: string;
-  sampleQuantity: number;
+  sampleQuantity?: number;
+  quantity?: number;
   uom: string;
-  sampleType: 'Raw Material Pellet Sample' | 'Color Masterbatch Plaque' | 'Additive Blend Specimen' | 'Regrind Quality Trial' | 'Custom Injection Molded Prototype';
-  requiredSpecification: string;
-  colorGrade: string;
-  trialPurpose: string;
-  dispatchWarehouse: string;
-  batchLotReference: string;
-  coaRequired: boolean;
-  msdsRequired: boolean;
-  requestedDate: string;
+  sampleType: 'Raw Material Pellet Sample' | 'Color Masterbatch Plaque' | 'Additive Blend Specimen' | 'Regrind Quality Trial' | 'Custom Injection Molded Prototype' | string;
+  requiredSpecification?: string;
+  colorGrade?: string;
+  polymerGrade?: string;
+  trialPurpose?: string;
+  dispatchWarehouse?: string;
+  batchLotReference?: string;
+  coaRequired?: boolean;
+  msdsRequired?: boolean;
+  requestedDate?: string;
+  requestDate?: string;
+  requiredByDate?: string;
   dispatchDate?: string;
   targetTrialDate?: string;
-  status: 'Requested' | 'Approved' | 'Prepared' | 'Dispatched' | 'Trial In Progress' | 'Feedback Received' | 'Sample Approved' | 'Sample Rejected' | 'Closed';
-  assignedTo: string;
+  status?: 'Requested' | 'Approved' | 'Prepared' | 'Dispatched' | 'Trial In Progress' | 'Feedback Received' | 'Sample Approved' | 'Sample Rejected' | 'Closed';
+  approvalStatus?: SampleApprovalStatus;
+  assignedTo?: string;
+  courierName?: string;
+  trackingNumber?: string;
+  customerFeedback?: string;
+  trialResult?: string;
   trialFeedback?: {
     trialDate: string;
     machineModelUsed: string;
@@ -316,50 +367,87 @@ export interface SampleRequest {
   };
 }
 
+export type ComplaintSeverity = 'Critical' | 'Major' | 'Minor';
+export type ComplaintStatus = 'New' | 'Acknowledged' | 'Under Investigation' | 'Action Planned' | 'In Progress' | 'Customer Response Sent' | 'Closed' | 'Reopened' | 'Open' | 'Resolved';
+
 export interface CustomerComplaint {
   id: string;
-  complaintCode: string;
-  customerName: string;
+  complaintCode?: string;
+  complaintNumber?: string;
+  customerName?: string;
+  accountName?: string;
   accountId: string;
-  contactPerson: string;
-  complaintDate: string;
-  channel: 'Email' | 'Phone' | 'Customer Portal' | 'Salesperson Direct';
-  productItem: string;
+  contactPerson?: string;
+  complaintDate?: string;
+  channel?: 'Email' | 'Phone' | 'Customer Portal' | 'Salesperson Direct';
+  productItem?: string;
   customerPartNumber?: string;
-  batchLotNumber: string;
+  batchLotNumber?: string;
+  batchNumber?: string;
   salesOrderRef?: string;
   invoiceRef?: string;
-  complaintType: 'Quality Defect' | 'Dimensional Variation (GD&T)' | 'Color / Shade Mismatch' | 'Contamination / Black Specs' | 'Packaging Damage' | 'Delivery Delay' | 'Documentation / COA Issue' | 'Wrong Material Supplied';
-  severity: 'Critical' | 'Major' | 'Minor';
-  status: 'New' | 'Acknowledged' | 'Under Investigation' | 'Action Planned' | 'In Progress' | 'Customer Response Sent' | 'Closed' | 'Reopened';
-  assignedInvestigator: string;
-  slaDueDate: string;
-  isSlaBreached: boolean;
-  description: string;
-  customerRequestedAction: 'Immediate Replacement Lot' | 'Credit Note (RMA)' | 'On-Site Quality Audit' | 'Engineering CAPA Report';
+  complaintType?: 'Quality Defect' | 'Dimensional Variation (GD&T)' | 'Color / Shade Mismatch' | 'Contamination / Black Specs' | 'Packaging Damage' | 'Delivery Delay' | 'Documentation / COA Issue' | 'Wrong Material Supplied';
+  complaintCategory?: string;
+  defectDescription?: string;
+  affectedQuantity?: number | string;
+  uom?: string;
+  dateLogged?: string;
+  targetResolutionDate?: string;
+  severity: ComplaintSeverity;
+  status: ComplaintStatus;
+  assignedInvestigator?: string;
+  assignedTo?: string;
+  slaDueDate?: string;
+  isSlaBreached?: boolean;
+  description?: string;
+  customerRequestedAction?: 'Immediate Replacement Lot' | 'Credit Note (RMA)' | 'On-Site Quality Audit' | 'Engineering CAPA Report';
   investigationDetails?: string;
   rootCauseAnalysis?: string;
   linkedNcrNumber?: string;
   linkedCapaId?: string;
+  capaStatus?: string;
   salesReturnRmaId?: string;
   resolutionSummary?: string;
   closedDate?: string;
 }
 
+export type Complaint = CustomerComplaint;
+
+export type CustomerDocumentType = 'Customer Registration' | 'GST / Tax Certificate' | 'Purchase Order' | 'Master Sales Contract' | 'Technical 2D/3D Drawing' | 'Specification Sheet' | 'Packaging Artwork' | 'Label Artwork' | 'COA Requirement' | 'MSDS Requirement' | 'Sample Approval Certificate' | 'Quality Agreement' | 'NDA' | 'Customer Audit Report';
+
 export interface CustomerDocument {
   id: string;
-  documentCode: string;
-  customerName: string;
+  documentCode?: string;
+  customerName?: string;
+  accountName?: string;
   accountId: string;
-  documentType: 'Customer Registration' | 'GST / Tax Certificate' | 'Purchase Order' | 'Master Sales Contract' | 'Technical 2D/3D Drawing' | 'Specification Sheet' | 'Packaging Artwork' | 'Label Artwork' | 'COA Requirement' | 'MSDS Requirement' | 'Sample Approval Certificate' | 'Quality Agreement' | 'NDA' | 'Customer Audit Report';
-  documentName: string;
+  documentType: CustomerDocumentType;
+  documentName?: string;
+  documentTitle?: string;
+  fileName?: string;
+  fileExtension?: string;
   fileSize: string;
   version: string;
-  effectiveDate: string;
+  effectiveDate?: string;
   expiryDate?: string;
   uploadedBy: string;
-  status: 'Active & Verified' | 'Pending Review' | 'Expired' | 'Superseded';
+  uploadedAt?: string;
+  isConfidential?: boolean;
+  status?: 'Active & Verified' | 'Pending Review' | 'Expired' | 'Superseded';
   relatedItemCode?: string;
+}
+
+export interface SalesOrder {
+  id: string;
+  orderNumber: string;
+  accountId?: string;
+  customerName: string;
+  orderDate: string;
+  status: string;
+  orderStatus?: string;
+  deliveryStatus?: string;
+  totalAmount: number;
+  currency: string;
 }
 
 export interface CustomerSegmentation {

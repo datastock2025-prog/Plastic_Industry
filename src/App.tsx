@@ -16,8 +16,16 @@ import { MepViews } from './components/MepViews';
 import { HrViews } from './components/HrViews';
 import { ScmViews } from './components/scm/ScmViews';
 import { CrmViews } from './components/CrmViews';
+import { AdminViews } from './components/AdminViews';
 import { AngularArchitectureGuide } from './components/AngularArchitectureGuide';
 import { LoginScreen } from './components/LoginScreen';
+import {
+  WorkspaceTasksView,
+  WorkspaceApprovalsView,
+  WorkspaceNotificationsView,
+  WorkspaceSavedViewsView,
+  WorkspaceRecentRecordsView,
+} from './components/common/WorkspaceHomeTools';
 
 import {
   initialItems,
@@ -125,12 +133,38 @@ export const App: React.FC = () => {
 
   // Toast Notification State
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => {
       setToastMsg((curr) => (curr === msg ? null : curr));
     }, 3000);
+  };
+
+  const handlePlantChange = (plantId: string, plantName: string) => {
+    if (currentUser) {
+      const updatedUser = { ...currentUser, plantId };
+      setCurrentUser(updatedUser);
+      try {
+        localStorage.setItem('reboot_auth_user', JSON.stringify(updatedUser));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const handleRoleChange = (newRole: string) => {
+    if (currentUser) {
+      const updatedUser = { ...currentUser, role: newRole };
+      setCurrentUser(updatedUser);
+      try {
+        localStorage.setItem('reboot_auth_user', JSON.stringify(updatedUser));
+      } catch (e) {
+        console.error(e);
+      }
+    }
   };
 
   const handleLogin = (user: AuthUser, plantId: string, shiftId: string) => {
@@ -186,6 +220,11 @@ export const App: React.FC = () => {
   const getBreadcrumbs = (): string[] => {
     const map: Record<string, string[]> = {
       home: ['Workspace Home'],
+      tasks: ['Workspace Home', 'My Tasks & Work Items'],
+      approvals: ['Workspace Home', 'My Approvals Hub'],
+      notifications: ['Workspace Home', 'Notification Center'],
+      savedViews: ['Workspace Home', 'Saved Views & Presets'],
+      recentRecords: ['Workspace Home', 'Recent Records Log'],
       angularGuide: ['Workspace', 'Angular 18+ Architecture Guide'],
       itemList: ['Master Data', 'Item Master'],
       itemDetail: ['Master Data', 'Item Master', viewParams.code || 'Detail'],
@@ -376,6 +415,19 @@ export const App: React.FC = () => {
       crmDocumentCenter: ['CRM & Client 360', 'Document Center & Regulatory Vault'],
       crmCustomerSegmentation: ['CRM & Client 360', 'Customer Segmentation & Strategic Tiers'],
       crmAnalyticsReports: ['CRM & Client 360', 'CRM Revenue & Velocity Analytics'],
+      adminDashboard: ['Admin & System Settings', 'Operations & System Health'],
+      adminUsers: ['Admin & System Settings', 'User Directory & Plant Access'],
+      adminRoles: ['Admin & System Settings', 'RBAC Roles & Granular Permission Matrix'],
+      adminPlants: ['Admin & System Settings', 'Company Profile & Multi-Plant Facilities'],
+      adminNumbering: ['Admin & System Settings', 'Document Numbering & Prefix Sequences'],
+      adminWorkflows: ['Admin & System Settings', 'Approval Workflow & Escalation Engine'],
+      adminSecurity: ['Admin & System Settings', 'Security, MFA & Account Lockout Policies'],
+      adminAuditLogs: ['Admin & System Settings', 'Immutable System Audit Logs & Forensics'],
+      adminIntegrations: ['Admin & System Settings', 'Hardware Interfaces & External Connectors'],
+      adminBackups: ['Admin & System Settings', 'Database Snapshots & Disaster Recovery'],
+      adminNotifications: ['Admin & System Settings', 'Notification Templates & Event Routing'],
+      adminCustomFields: ['Admin & System Settings', 'Global System Parameters & User Defined Fields'],
+      adminSystemParameters: ['Admin & System Settings', 'Global System Parameters & User Defined Fields'],
     };
     return map[currentView] || ['Reboot ERP', currentView];
   };
@@ -604,6 +656,7 @@ export const App: React.FC = () => {
     'scmRbac',
   ].includes(currentView);
   const isCrm = currentView.startsWith('crm');
+  const isAdmin = currentView.startsWith('admin');
 
   const activeWOCount = workOrders.filter((w) => !['completed', 'cancelled'].includes(w.status)).length;
   const lowStockCount = items.filter((i) => i.status === 'low').length;
@@ -625,34 +678,50 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#F6F4EF] text-[#1C1F26] font-['Plus_Jakarta_Sans']">
-      {/* Sidebar */}
-      <Sidebar
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#F6F4EF] text-[#1C1F26] font-['Plus_Jakarta_Sans']">
+      {/* Topbar: Fixed at top, full width */}
+      <Topbar
+        breadcrumbs={getBreadcrumbs()}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
         currentView={currentView}
         onNavigate={handleNavigate}
         openAngularGuide={() => handleNavigate('angularGuide')}
         currentUser={currentUser}
         onLogout={handleLogout}
         onSwitchUser={handleSwitchUser}
+        onToggleSidebar={() => {
+          if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+            setIsMobileSidebarOpen((prev) => !prev);
+          } else {
+            setIsSidebarCollapsed((prev) => !prev);
+          }
+        }}
+        onPlantChange={handlePlantChange}
+        onRoleChange={handleRoleChange}
+        showToast={showToast}
       />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Topbar */}
-        <Topbar
-          breadcrumbs={getBreadcrumbs()}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+      {/* Workspace Body: Sidebar on left + Content on right */}
+      <div className="flex-1 flex min-h-0 overflow-hidden relative">
+        {/* Sidebar */}
+        <Sidebar
           currentView={currentView}
           onNavigate={handleNavigate}
           openAngularGuide={() => handleNavigate('angularGuide')}
           currentUser={currentUser}
-          onLogout={handleLogout}
-          onSwitchUser={handleSwitchUser}
+          isOpenMobile={isMobileSidebarOpen}
+          onCloseMobile={() => setIsMobileSidebarOpen(false)}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+          activeWOCount={activeWOCount}
+          lowStockCount={lowStockCount}
+          openPOCount={openPOCount}
+          showToast={showToast}
         />
 
         {/* View Container */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-5 md:p-6 min-w-0 transition-all">
           {currentView === 'home' && (
             <HomeView
               onNavigate={handleNavigate}
@@ -661,6 +730,26 @@ export const App: React.FC = () => {
               lowStockCount={lowStockCount}
               openPOCount={openPOCount}
             />
+          )}
+
+          {currentView === 'tasks' && (
+            <WorkspaceTasksView onNavigate={handleNavigate} showToast={showToast} />
+          )}
+
+          {currentView === 'approvals' && (
+            <WorkspaceApprovalsView onNavigate={handleNavigate} showToast={showToast} />
+          )}
+
+          {currentView === 'notifications' && (
+            <WorkspaceNotificationsView onNavigate={handleNavigate} showToast={showToast} />
+          )}
+
+          {currentView === 'savedViews' && (
+            <WorkspaceSavedViewsView onNavigate={handleNavigate} showToast={showToast} />
+          )}
+
+          {currentView === 'recentRecords' && (
+            <WorkspaceRecentRecordsView onNavigate={handleNavigate} showToast={showToast} />
           )}
 
           {currentView === 'angularGuide' && (
@@ -927,6 +1016,15 @@ export const App: React.FC = () => {
 
           {isCrm && (
             <CrmViews
+              currentView={currentView}
+              viewParams={viewParams}
+              onNavigate={handleNavigate}
+              showToast={showToast}
+            />
+          )}
+
+          {isAdmin && (
+            <AdminViews
               currentView={currentView}
               viewParams={viewParams}
               onNavigate={handleNavigate}

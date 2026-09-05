@@ -1453,3 +1453,44 @@ export const mockCrmRbac: CrmRolePermission[] = [
     ],
   },
 ];
+
+export const mockComplaints = mockCustomerComplaints;
+
+export const mockSalesOrders = [
+  {
+    id: 'SO-2026-0891',
+    orderNumber: 'SO-2026-0891',
+    accountId: 'ACC-1001',
+    customerName: 'Tata AutoComp Systems Ltd',
+    orderDate: '2026-08-25',
+    status: 'In Production',
+    orderStatus: 'Confirmed',
+    deliveryStatus: 'In Production',
+    totalAmount: 1850000,
+    currency: 'INR',
+  },
+  {
+    id: 'SO-2026-0842',
+    orderNumber: 'SO-2026-0842',
+    accountId: 'ACC-1001',
+    customerName: 'Tata AutoComp Systems Ltd',
+    orderDate: '2026-08-10',
+    status: 'Dispatched',
+    orderStatus: 'Dispatched',
+    deliveryStatus: 'In Transit',
+    totalAmount: 940000,
+    currency: 'INR',
+  },
+  {
+    id: 'SO-2026-0790',
+    orderNumber: 'SO-2026-0790',
+    accountId: 'ACC-1002',
+    customerName: 'Hindustan Unilever Ltd',
+    orderDate: '2026-08-01',
+    status: 'Delivered',
+    orderStatus: 'Closed',
+    deliveryStatus: 'Delivered',
+    totalAmount: 3200000,
+    currency: 'INR',
+  },
+];
