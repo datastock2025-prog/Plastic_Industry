@@ -277,3 +277,93 @@ export interface SystemParameter {
   requiresServerRestart: boolean;
   unit?: string;
 }
+
+// RBAC Simulator & Sandbox Types
+export interface RoleSimulationScenario {
+  id: string;
+  name: string;
+  description: string;
+  userId?: string;
+  roleIds: string[];
+  plantId: string;
+  shift: string;
+  module: string;
+  resource: string;
+  action: 'view' | 'create' | 'edit' | 'delete' | 'approve' | 'export' | 'admin';
+  expectedVerdict: 'PERMIT' | 'DENY' | 'REQUIRES_DUAL_AUTH' | 'MFA_STEP_UP_REQUIRED';
+}
+
+export interface SimulationVerdict {
+  verdict: 'PERMIT' | 'DENY' | 'REQUIRES_DUAL_AUTH' | 'MFA_STEP_UP_REQUIRED';
+  matchedRole: string;
+  reason: string;
+  policyPath: string;
+  evaluatedAt: string;
+  conditionsChecked: { name: string; passed: boolean; detail: string }[];
+}
+
+export interface SodConflictRule {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM';
+  conflictingRoles: string[];
+  conflictingActions: { module: string; action: string }[];
+  regulatoryStandard: 'SOX 404' | 'IATF 16949' | 'ISO 27001' | 'GMP Annex 11';
+}
+
+export interface SodViolation {
+  id: string;
+  ruleCode: string;
+  ruleName: string;
+  userName: string;
+  userEmail: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM';
+  rolesAssigned: string[];
+  detectedOn: string;
+  status: 'Open' | 'Mitigated' | 'Exception Approved';
+  mitigatingControl?: string;
+}
+
+// Multi-Context & Security Governance Types
+export interface MultiContextScopePolicy {
+  id: string;
+  contextName: string;
+  contextType: 'Plant Entity' | 'Business Unit' | 'Warehouse Division' | 'HQ Corporate';
+  code: string;
+  location: string;
+  ipSubnets: string[];
+  operatingHours: string;
+  enforceGeofence: boolean;
+  mfaRequired: boolean;
+  assignedUsersCount: number;
+  dataIsolationLevel: 'Strict Partitioned' | 'Federated Read' | 'Global Master';
+  activeSessions: number;
+}
+
+export interface RowLevelSecurityRule {
+  id: string;
+  tableName: string;
+  ruleName: string;
+  applicableRoles: string[];
+  filterCondition: string;
+  targetContext: string;
+  isActive: boolean;
+  lastUpdated: string;
+}
+
+export interface BreakGlassRequest {
+  id: string;
+  ticketNumber: string;
+  requestedBy: string;
+  roleElevatedTo: string;
+  reason: string;
+  targetPlant: string;
+  validForHours: number;
+  approvedBy: string;
+  status: 'Active' | 'Expired' | 'Revoked' | 'Pending';
+  requestedAt: string;
+  expiresAt: string;
+}
+

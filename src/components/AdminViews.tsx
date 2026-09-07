@@ -55,6 +55,7 @@ import { AdminBackupRetentionPrivacyView } from './admin/AdminBackupRetentionPri
 import { AdminLicenseSubscriptionView } from './admin/AdminLicenseSubscriptionView';
 import { AdminGlobalSearchConfigView } from './admin/AdminGlobalSearchConfigView';
 import { AdminQuickActionsConfigView } from './admin/AdminQuickActionsConfigView';
+import { AdminRbacSecurityMultiContextView } from './admin/AdminRbacSecurityMultiContextView';
 
 interface AdminViewsProps {
   currentView: string;
@@ -83,7 +84,8 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
     { id: 'adminPlantSettings', label: 'Plant / Branches', icon: Building2, category: 'Org & Workflow' },
     { id: 'adminUserGroups', label: 'User Groups & Crews', icon: Users, category: 'Org & Workflow' },
     { id: 'adminUsers', label: 'User Directory', icon: Users, category: 'Org & Workflow' },
-    { id: 'adminRoles', label: 'RBAC Roles', icon: ShieldCheck, category: 'Org & Workflow' },
+    { id: 'adminRoles', label: 'RBAC Matrix & Simulator', icon: ShieldCheck, category: 'Org & Workflow' },
+    { id: 'adminMultiContextSecurity', label: 'RBAC Security & Multi-Context', icon: ShieldAlert, category: 'Security & Integrations' },
     { id: 'adminApprovalWorkflowConfig', label: 'Approval Workflows', icon: GitFork, category: 'Org & Workflow' },
     { id: 'adminNumbering', label: 'Numbering Series', icon: Hash, category: 'Org & Workflow' },
     { id: 'adminLoginSecurityAudit', label: 'Login & Security Audit', icon: ShieldAlert, category: 'Security & Integrations' },
@@ -110,6 +112,12 @@ export const AdminViews: React.FC<AdminViewsProps> = ({
       // 25. Global Search
       case 'adminGlobalSearchConfig':
         return <AdminGlobalSearchConfigView onNavigateTab={onNavigate} showToast={showToast} />;
+
+      // Multi-Context RBAC & Security Screen
+      case 'adminMultiContextSecurity':
+      case 'adminMultiContextRbac':
+      case 'adminRbacSecurity':
+        return <AdminRbacSecurityMultiContextView showToast={showToast} />;
 
       // 4. User Groups Screen
       case 'adminUserGroups':

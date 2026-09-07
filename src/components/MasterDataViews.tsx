@@ -27,6 +27,7 @@ import {
   ThumbsDown,
 } from 'lucide-react';
 import { PaginationBar } from './common/PaginationBar';
+import { CreateItemWizardModal } from './masterdata/CreateItemWizardModal';
 
 interface MasterDataProps {
   view: string;
@@ -84,6 +85,29 @@ export const MasterDataViews: React.FC<MasterDataProps> = ({
   const [machinePage, setMachinePage] = useState<number>(1);
   const [machinePageSize, setMachinePageSize] = useState<number>(10);
 
+  // 10-Step Item Wizard State
+  const [isItemWizardOpen, setIsItemWizardOpen] = useState<boolean>(false);
+  const [wizardEditItem, setWizardEditItem] = useState<ItemMaster | null>(null);
+
+  const handleOpenCreateItemWizard = () => {
+    setWizardEditItem(null);
+    setIsItemWizardOpen(true);
+  };
+
+  const handleOpenEditItemWizard = (item: ItemMaster) => {
+    setWizardEditItem(item);
+    setIsItemWizardOpen(true);
+  };
+
+  const handleSaveWizardItem = (savedItem: ItemMaster) => {
+    const exists = items.some((i) => i.code === savedItem.code);
+    if (exists) {
+      onUpdateItem(savedItem);
+    } else {
+      onCreateItem(savedItem);
+    }
+  };
+
   // Status helper badge
   const renderStatusBadge = (status: string) => {
     const map: Record<string, { cls: string; label: string }> = {
@@ -135,139 +159,7 @@ export const MasterDataViews: React.FC<MasterDataProps> = ({
     const totalItemPages = Math.ceil(filteredItems.length / itemPageSize) || 1;
     const pagedItems = filteredItems.slice((itemPage - 1) * itemPageSize, itemPage * itemPageSize);
 
-    const openCreateItemWizard = () => {
-      let code = '';
-      let name = '';
-      let type: ItemType = 'Raw Material';
-      let cat = 'Polypropylene';
-      let baseUOM = 'KG';
-      let wh = 'RM-WH-01';
-      let lot = true;
-      let qc = true;
-      let cycle = 12;
 
-      const handleSave = () => {
-        if (!code.trim() || !name.trim()) {
-          showToast('Item code and name are required');
-          return;
-        }
-        const newItem: ItemMaster = {
-          code: code.trim(),
-          name: name.trim(),
-          type,
-          cat,
-          stock: `0 ${baseUOM}`,
-          avail: `0 ${baseUOM}`,
-          wh,
-          lot,
-          qc,
-          status: 'active',
-          icon: type === 'Finished Good' ? '▣' : type === 'Masterbatch' ? '●' : '◇',
-          baseUOM,
-          approval: 'pending',
-          createdOn: 'Today',
-          standardCycleTime: type === 'Finished Good' ? cycle : 0,
-          cycleTimeUOM: 'sec/pc',
-          locationCode: `${wh}-A1`,
-        };
-        onCreateItem(newItem);
-        closeDrawer();
-        showToast(`Item ${newItem.code} created & submitted for review`);
-      };
-
-      openDrawer(
-        'Create New Item',
-        <div className="space-y-4">
-          <div className="field">
-            <label>Item Type</label>
-            <select
-              defaultValue={type}
-              onChange={(e) => (type = e.target.value as ItemType)}
-            >
-              <option value="Raw Material">Raw Material</option>
-              <option value="Masterbatch">Masterbatch</option>
-              <option value="Additive">Additive</option>
-              <option value="Regrind">Regrind</option>
-              <option value="Finished Good">Finished Good</option>
-              <option value="Packaging">Packaging</option>
-              <option value="Spare Part">Spare Part</option>
-            </select>
-          </div>
-          <div className="field">
-            <label>Item Code *</label>
-            <input
-              placeholder="e.g. RM-PP-NAT-002"
-              onChange={(e) => (code = e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label>Item Name *</label>
-            <input
-              placeholder="e.g. PP Copolymer Granules"
-              onChange={(e) => (name = e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label>Category / Resin Family</label>
-            <input
-              defaultValue={cat}
-              onChange={(e) => (cat = e.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="field">
-              <label>Base UOM</label>
-              <input
-                defaultValue={baseUOM}
-                onChange={(e) => (baseUOM = e.target.value)}
-              />
-            </div>
-            <div className="field">
-              <label>Default Warehouse</label>
-              <select
-                defaultValue={wh}
-                onChange={(e) => (wh = e.target.value)}
-              >
-                <option value="RM-WH-01">RM-WH-01 (Resin)</option>
-                <option value="RM-WH-02">RM-WH-02 (Additives)</option>
-                <option value="RG-WH-01">RG-WH-01 (Regrind)</option>
-                <option value="FG-WH-01">FG-WH-01 (Finished Goods)</option>
-                <option value="PK-WH-01">PK-WH-01 (Packaging)</option>
-                <option value="SP-WH-01">SP-WH-01 (Spares)</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex gap-4 pt-2">
-            <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
-              <input
-                type="checkbox"
-                defaultChecked={lot}
-                onChange={(e) => (lot = e.target.checked)}
-                className="w-4 h-4 text-[#E8622C]"
-              />
-              Lot / Batch Controlled
-            </label>
-            <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
-              <input
-                type="checkbox"
-                defaultChecked={qc}
-                onChange={(e) => (qc = e.target.checked)}
-                className="w-4 h-4 text-[#E8622C]"
-              />
-              QC Inspection Required
-            </label>
-          </div>
-        </div>,
-        <div className="flex justify-end gap-2 w-full">
-          <button className="btn btn-sm btn-ghost" onClick={closeDrawer}>
-            Cancel
-          </button>
-          <button className="btn btn-sm btn-primary" onClick={handleSave}>
-            Create Item &rarr;
-          </button>
-        </div>
-      );
-    };
 
     return (
       <div className="space-y-5">
@@ -288,7 +180,7 @@ export const MasterDataViews: React.FC<MasterDataProps> = ({
             >
               Export CSV
             </button>
-            <button className="btn btn-sm btn-primary" onClick={openCreateItemWizard}>
+            <button className="btn btn-sm btn-primary" onClick={handleOpenCreateItemWizard}>
               <Plus className="w-3.5 h-3.5" /> Create Item
             </button>
           </div>
@@ -605,81 +497,31 @@ export const MasterDataViews: React.FC<MasterDataProps> = ({
                               </>
                             )}
                             <button
-                              className="p-1 text-[#6B7280] hover:text-[#14213D] hover:bg-[#F6F4EF] rounded"
-                              title="Edit"
-                              onClick={() => {
-                                let editName = item.name;
-                                let editCat = item.cat;
-                                let editStatus = item.status;
-                                let editWh = item.wh;
-
-                                openDrawer(
-                                  `Edit Item — ${item.code}`,
-                                  <div className="space-y-4">
-                                    <div className="field">
-                                      <label>Item Name</label>
-                                      <input
-                                        defaultValue={editName}
-                                        onChange={(e) => (editName = e.target.value)}
-                                      />
-                                    </div>
-                                    <div className="field">
-                                      <label>Category</label>
-                                      <input
-                                        defaultValue={editCat}
-                                        onChange={(e) => (editCat = e.target.value)}
-                                      />
-                                    </div>
-                                    <div className="field">
-                                      <label>Status</label>
-                                      <select
-                                        defaultValue={editStatus}
-                                        onChange={(e) => (editStatus = e.target.value as any)}
-                                      >
-                                        <option value="active">Active</option>
-                                        <option value="low">Low stock</option>
-                                        <option value="hold">Quality hold</option>
-                                        <option value="blocked">Blocked</option>
-                                        <option value="inactive">Inactive</option>
-                                      </select>
-                                    </div>
-                                    <div className="field">
-                                      <label>Warehouse</label>
-                                      <input
-                                        defaultValue={editWh}
-                                        onChange={(e) => (editWh = e.target.value)}
-                                      />
-                                    </div>
-                                  </div>,
-                                  <div className="flex justify-end gap-2 w-full">
-                                    <button className="btn btn-sm btn-ghost" onClick={closeDrawer}>
-                                      Cancel
-                                    </button>
-                                    <button
-                                      className="btn btn-sm btn-primary"
-                                      onClick={() => {
-                                        onUpdateItem({
-                                          ...item,
-                                          name: editName,
-                                          cat: editCat,
-                                          status: editStatus,
-                                          wh: editWh,
-                                        });
-                                        closeDrawer();
-                                        showToast(`Item ${item.code} updated`);
-                                      }}
-                                    >
-                                      Save Changes
-                                    </button>
-                                  </div>
-                                );
-                              }}
+                              className="p-1 text-[#6B7280] hover:text-[#0066CC] hover:bg-blue-50 rounded transition-colors"
+                              title="Edit in 10-Step Wizard"
+                              onClick={() => handleOpenEditItemWizard(item)}
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                             <button
-                              className="p-1 text-[#6B7280] hover:text-rose-600 hover:bg-rose-50 rounded"
-                              title="Delete"
+                              className="p-1 text-[#6B7280] hover:text-[#0066CC] hover:bg-blue-50 rounded transition-colors"
+                              title="Clone / Duplicate Item"
+                              onClick={() => {
+                                const clone = {
+                                  ...item,
+                                  code: `${item.code}-COPY`,
+                                  name: `${item.name} (Copy)`,
+                                  approval: 'draft' as ApprovalStatus,
+                                };
+                                handleOpenEditItemWizard(clone);
+                                showToast(`Loaded duplicate draft of ${item.code} in Create Item Wizard.`);
+                              }}
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              className="p-1 text-[#6B7280] hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                              title="Delete Item"
                               onClick={() => {
                                 openConfirm(
                                   `Delete ${item.code}?`,
@@ -720,6 +562,15 @@ export const MasterDataViews: React.FC<MasterDataProps> = ({
             itemName="items"
           />
         </div>
+
+        {/* 10-Step Item Wizard Modal */}
+        <CreateItemWizardModal
+          isOpen={isItemWizardOpen}
+          onClose={() => setIsItemWizardOpen(false)}
+          onSaveItem={handleSaveWizardItem}
+          editItem={wizardEditItem}
+          showToast={showToast}
+        />
       </div>
     );
   }
@@ -782,6 +633,12 @@ export const MasterDataViews: React.FC<MasterDataProps> = ({
           <div className="dh-actions">
             <button
               className="btn btn-sm btn-ghost"
+              onClick={() => handleOpenEditItemWizard(item)}
+            >
+              <Edit2 className="w-3.5 h-3.5" /> Edit in 10-Step Wizard
+            </button>
+            <button
+              className="btn btn-sm btn-ghost"
               onClick={() => showToast(`Label sent to Zebra printer for ${item.code}`)}
             >
               <Printer className="w-3.5 h-3.5" /> Print Label
@@ -789,9 +646,14 @@ export const MasterDataViews: React.FC<MasterDataProps> = ({
             <button
               className="btn btn-sm btn-ghost"
               onClick={() => {
-                const clone = { ...item, code: `${item.code}-COPY`, name: `${item.name} (Copy)` };
-                onCreateItem(clone);
-                showToast(`Duplicated as ${clone.code}`);
+                const clone = {
+                  ...item,
+                  code: `${item.code}-COPY`,
+                  name: `${item.name} (Copy)`,
+                  approval: 'draft' as ApprovalStatus,
+                };
+                handleOpenEditItemWizard(clone);
+                showToast(`Loaded copy of ${item.code} in Create Item Wizard.`);
               }}
             >
               <Copy className="w-3.5 h-3.5" /> Duplicate
@@ -1124,6 +986,15 @@ export const MasterDataViews: React.FC<MasterDataProps> = ({
             </p>
           </div>
         )}
+
+        {/* 10-Step Item Wizard Modal */}
+        <CreateItemWizardModal
+          isOpen={isItemWizardOpen}
+          onClose={() => setIsItemWizardOpen(false)}
+          onSaveItem={handleSaveWizardItem}
+          editItem={wizardEditItem}
+          showToast={showToast}
+        />
       </div>
     );
   }

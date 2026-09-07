@@ -1,4 +1,15 @@
-export type ItemType = 'Raw Material' | 'Additive' | 'Masterbatch' | 'Regrind' | 'Finished Good' | 'Packaging' | 'Spare Part';
+export type ItemType =
+  | 'Raw Material'
+  | 'Additive'
+  | 'Masterbatch'
+  | 'Colorant'
+  | 'Regrind'
+  | 'Semi-Finished Good'
+  | 'Finished Good'
+  | 'Packaging'
+  | 'Packaging Material'
+  | 'Spare Part'
+  | 'Consumable';
 export type ItemStatus = 'active' | 'low' | 'hold' | 'blocked' | 'inactive';
 export type ApprovalStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'released' | 'under_review' | 'obsolete' | 'waived';
 

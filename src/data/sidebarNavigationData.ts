@@ -304,7 +304,8 @@ export const NAVIGATION_GROUPS: NavGroupDef[] = [
     items: [
       { id: 'nav-adm-users', label: 'Users Directory', view: 'adminUsers', icon: 'Users' },
       { id: 'nav-adm-groups', label: 'User Groups & Crews', view: 'adminUserGroups', icon: 'Users' },
-      { id: 'nav-adm-roles', label: 'Roles & Granular Permissions', view: 'adminRoles', icon: 'Shield' },
+      { id: 'nav-adm-roles', label: 'RBAC Permission Matrix & Simulator', view: 'adminRoles', icon: 'Shield' },
+      { id: 'nav-adm-multicontext-rbac', label: 'RBAC Security & Multi-Context', view: 'adminMultiContextSecurity', icon: 'ShieldAlert' },
       { id: 'nav-adm-workflows', label: 'Approval Workflows', view: 'adminWorkflows', icon: 'GitBranch' },
       { id: 'nav-adm-company', label: 'Company & Organization', view: 'adminCompanySettings', icon: 'Building' },
       { id: 'nav-adm-plants', label: 'Plants & Branches', view: 'adminPlantBranches', icon: 'Building' },
